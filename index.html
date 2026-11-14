@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Frieren: The Journey North (fan game)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; height: 100%; background: #16161e; color: #c8d0d8; font-family: ui-monospace, Menlo, monospace; overflow: hidden; }
+  #wrap { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+  canvas { background: #000; border: 6px solid #2e2e3e; border-radius: 8px; touch-action: none; max-width: 96vw; }
+  #help { font-size: 12px; opacity: 0.75; text-align: center; padding: 0 8px; }
+  #pad { display: none; width: min(96vw, 520px); justify-content: space-between; align-items: center; user-select: none; -webkit-user-select: none; }
+  #pad .dpad { display: grid; grid-template-columns: repeat(3, 48px); grid-template-rows: repeat(3, 48px); }
+  #pad button { background: #2e2e3e; color: #e8e8f0; border: 2px solid #4a4a5e; border-radius: 10px; font-size: 18px; touch-action: none; }
+  #pad .ab { display: flex; gap: 14px; }
+  #pad .ab button { width: 60px; height: 60px; border-radius: 50%; }
+  @media (pointer: coarse) { #pad { display: flex; } #help { display: none; } }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c" width="640" height="576"></canvas>
+  <div id="help">Arrows or WASD: move &nbsp;|&nbsp; Z or Enter: talk and confirm &nbsp;|&nbsp; X or Esc: menu &nbsp;|&nbsp; M: music on and off</div>
+  <div id="pad">
+    <div class="dpad">
+      <span></span><button data-k="up">&#9650;</button><span></span>
+      <button data-k="left">&#9664;</button><span></span><button data-k="right">&#9654;</button>
+      <span></span><button data-k="down">&#9660;</button><span></span>
+    </div>
+    <div class="ab"><button data-k="back">B</button><button data-k="ok">A</button></div>
+  </div>
+</div>
+<script src="js/core.js"></script>
+<script src="js/art.js"></script>
+<script src="js/levels1.js"></script>
+<script src="js/levels2.js"></script>
+<script src="js/levels3.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
