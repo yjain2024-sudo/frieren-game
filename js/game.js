@@ -25,61 +25,35 @@
     { card: 'Unofficial fan game\n\nFrieren: Beyond Journey\'s End\nis created by Kanehito Yamada\nand Tsukasa Abe' },
   ];
 
-  const TRACKS = {
-    title: { ms: 260, root: 262, m: [0, null, 7, null, 12, null, 11, 7, 9, null, 5, null, 7, null, null, null, 0, null, 7, null, 12, null, 14, 12, 11, null, 7, null, 9, null, null, null], bs: [0, 0, 5, 7, 0, 0, 7, 5] },
-    field: { ms: 200, root: 294, m: [0, null, 4, 7, 12, null, 7, 4, 5, null, 9, 12, 9, null, 7, null, 0, null, 4, 7, 11, null, 7, 4, 2, null, 5, 9, 7, null, null, null], bs: [0, 0, 5, 5, 0, 0, 7, 7] },
-    town: { ms: 230, root: 330, m: [7, null, 4, null, 0, 4, 7, null, 9, null, 5, null, 0, 5, 9, null, 7, null, 2, null, -1, 2, 7, null, 5, 4, 2, null, 0, null, null, null], bs: [0, 0, 5, 5, 7, 7, 0, 0] },
-    snow: { ms: 300, root: 247, m: [0, null, null, 3, 7, null, null, 3, 5, null, null, 8, 7, null, null, null, 0, null, null, 3, 10, null, null, 7, 8, null, 7, null, 3, null, null, null], bs: [0, 0, -4, -4, 5, 5, 0, 0] },
-    cave: { ms: 280, root: 196, m: [0, null, 3, null, 6, null, 3, null, 0, null, 3, null, 7, null, 6, null, 0, null, 3, null, 6, null, 10, null, 9, null, 6, null, 3, null, null, null], bs: [0, 0, 0, 0, -2, -2, -2, -2] },
-    battle: { ms: 130, root: 220, m: [0, 0, 3, 0, 7, 0, 3, 5, -2, -2, 2, -2, 5, -2, 2, 3, 0, 0, 3, 0, 7, 0, 10, 12, 8, 7, 5, 3, 2, null, 3, null], bs: [0, 0, -2, -2, 0, 0, -4, -5] },
-    boss: { ms: 115, root: 196, m: [0, null, 0, 3, null, 0, 6, 7, 0, null, 0, 3, null, 10, 8, 7, 0, null, 0, 3, null, 0, 6, 7, 12, 10, 8, 7, 6, 3, 2, null], bs: [0, 0, 0, 0, -4, -4, -2, -2] },
-  };
-
+  const MODE_LABEL = { file: 'Music: soundtrack file', chip: 'Music: original chiptune', off: 'Music: off' };
   const AU = {
-    ac: null, mute: false, cur: null, want: 'title', timer: null, step: 0, file: null, fileOK: false, started: false,
+    ac: null, synth: null, started: false, want: 'title', file: null, fileOK: false, mode: 'chip',
     init() {
       if (this.started) return;
       this.started = true;
-      try { this.ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (err) { this.ac = null; }
+      try { this.ac = new (window.AudioContext || window.webkitAudioContext)(); this.synth = new MUSIC.Synth(this.ac); } catch (err) { this.ac = null; this.synth = null; }
+      if (this.synth) { this.synth.play(this.want); setInterval(() => this.synth.pump(), 25); }
+      if (/[?&]chip/.test(location.search)) return;
       try {
         const a = new Audio('audio/music.mp3');
         a.loop = true; a.volume = 0.5;
-        a.addEventListener('error', () => { this.fileOK = false; this.file = null; });
-        a.play().then(() => { this.fileOK = true; clearInterval(this.timer); this.timer = null; }).catch(() => { this.fileOK = false; });
+        a.addEventListener('error', () => { this.fileOK = false; if (this.mode === 'file') this.setMode('chip'); });
+        a.play().then(() => { this.fileOK = true; this.setMode('file'); }).catch(() => { this.fileOK = false; });
         this.file = a;
       } catch (err) { this.file = null; }
-      this.cur = null;
-      this.play(this.want);
     },
-    tone(f, d, v, type) {
-      if (!this.ac || this.mute) return;
-      const o = this.ac.createOscillator(), g = this.ac.createGain(), t = this.ac.currentTime;
-      o.type = type || 'square'; o.frequency.value = f;
-      g.gain.setValueAtTime(v || 0.04, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
-      o.connect(g); g.connect(this.ac.destination); o.start(t); o.stop(t + d);
+    setMode(mode) {
+      this.mode = mode;
+      if (this.file) { if (mode === 'file') this.file.play().catch(() => {}); else this.file.pause(); }
+      if (this.synth) this.synth.play(mode === 'chip' ? this.want : null);
     },
-    sfx(n) {
-      const s = { blip: [[880, 0.04]], ok: [[660, 0.05], [990, 0.08]], bump: [[110, 0.08]], hit: [[170, 0.12], [120, 0.1]], heal: [[523, 0.08], [784, 0.14]], win: [[523, 0.1], [659, 0.1], [784, 0.1], [1047, 0.3]] }[n] || [];
-      s.forEach(([f, d], i) => setTimeout(() => this.tone(f, d, 0.05), i * 90));
-    },
-    play(name) {
-      this.want = name;
-      if (!this.started || this.cur === name) return;
-      this.cur = name; clearInterval(this.timer); this.timer = null; this.step = 0;
-      const tr = TRACKS[name];
-      if (!tr || !this.ac) return;
-      this.timer = setInterval(() => {
-        if (this.fileOK) return;
-        const n = tr.m[this.step % tr.m.length];
-        if (n !== null) this.tone(tr.root * Math.pow(2, n / 12), 0.2, 0.028);
-        if (this.step % 4 === 0) this.tone(tr.root / 2 * Math.pow(2, tr.bs[(this.step / 4 | 0) % tr.bs.length] / 12), 0.34, 0.04, 'triangle');
-        this.step++;
-      }, tr.ms);
-    },
+    play(name) { this.want = name; if (this.synth && this.mode === 'chip') this.synth.play(name); },
     toggle() {
-      this.mute = !this.mute;
-      if (this.file) { if (this.mute) this.file.pause(); else this.file.play().catch(() => {}); }
+      const modes = (this.fileOK ? ['file'] : []).concat(['chip', 'off']);
+      this.setMode(modes[(modes.indexOf(this.mode) + 1) % modes.length]);
+      return MODE_LABEL[this.mode];
     },
+    sfx(n) { if (this.synth) this.synth.sfx(n); },
   };
 
   const G = { t: 0, mode: 'title', sel: 0, lv: 1, xp: 0, herbs: 2, unlocked: 0, cur: 0, flags: {}, party: ['frieren'], extra: [], fol: [], dlg: null, bat: null, fx: null, map: null, p: null, back: 'title' };
@@ -187,7 +161,8 @@
       const n = G.cur + 1;
       if (n >= LEVELS.length) {
         G.unlocked = LEVELS.length - 1; save();
-        say(ENDING, () => { G.mode = 'title'; G.sel = 0; AU.play('title'); });
+        G.ending = true;
+        say(ENDING, () => { G.ending = false; G.mode = 'title'; G.sel = 0; });
         return;
       }
       G.unlocked = Math.max(G.unlocked, n);
@@ -341,6 +316,14 @@
       return;
     } else return;
     AU.sfx('blip');
+  }
+
+  const MEMORY_FX = ['flash', 'meteor', 'sunrise', 'night'];
+  function wantedTrack() {
+    if (G.ending || G.mode === 'title' || (G.mode === 'chapters' && G.back === 'title')) return 'title';
+    if (G.bat) return G.bat.wild ? 'battle' : 'boss';
+    if (MEMORY_FX.includes(G.fx)) return 'memory';
+    return LEVELS[G.cur].music || 'field';
   }
 
   const TITLE_OPTS = ['New Game', 'Continue', 'Chapters'], PAUSE_OPTS = ['Resume', 'Chapters', 'Title Screen'];
@@ -593,6 +576,10 @@
     if (G.mode === 'chapters') drawChapters();
     if (G.mode === 'pause') drawPause();
     if (G.dlg) drawDlg();
+    if (G.toast && G.toast.n > 0) {
+      ctx.fillStyle = 'rgba(16,16,24,0.86)'; ctx.fillRect(0, 11 * S, cvs.width, 10 * S);
+      text(G.toast.t, 80, 13.6, '#f8f0c0', 4.6, 'center');
+    }
   }
 
   const held = {}, queue = [];
@@ -610,8 +597,10 @@
 
   function tick() {
     G.t++;
-    queue.splice(0).forEach((a) => { if (a === 'm') AU.toggle(); else handle(a); });
+    queue.splice(0).forEach((a) => { if (a === 'm') G.toast = { t: AU.toggle(), n: 170 }; else handle(a); });
     update();
+    if (G.toast && G.toast.n > 0) G.toast.n--;
+    AU.play(wantedTrack());
   }
   let lastTime = 0, owed = 0;
   function frame(now) {

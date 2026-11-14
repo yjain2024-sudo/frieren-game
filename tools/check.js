@@ -1,6 +1,6 @@
 const fs = require('fs'), vm = require('vm'), path = require('path');
 const root = path.join(__dirname, '..');
-['js/core.js', 'js/art.js', 'js/levels1.js', 'js/levels2.js', 'js/levels3.js'].forEach((f) => vm.runInThisContext(fs.readFileSync(path.join(root, f), 'utf8'), { filename: f }));
+['js/core.js', 'js/art.js', 'js/music.js', 'js/levels1.js', 'js/levels2.js', 'js/levels3.js'].forEach((f) => vm.runInThisContext(fs.readFileSync(path.join(root, f), 'utf8'), { filename: f }));
 
 let problems = 0;
 const bad = (msg) => { problems++; console.log('  PROBLEM: ' + msg); };
@@ -112,6 +112,26 @@ function simulate(eid, party, lv, herbs) {
   }
   return { o: 'timeout', turn: 80 };
 }
+console.log('\nMusic:');
+LEVELS.forEach((D, li) => { if (!MUSIC.TRACKS[D.music || 'field']) bad(`Ch${li + 1}: unknown music ${D.music}`); });
+Object.keys(MUSIC.TRACKS).forEach((name) => {
+  try {
+    const c = MUSIC.compile(name);
+    let strong = 0, fit = 0, lo = 200, hi = 0, notes = 0;
+    c.lead.forEach((ev, i) => {
+      if (!ev) return;
+      notes++; lo = Math.min(lo, ev.m); hi = Math.max(hi, ev.m);
+      if (i % 4 !== 0) return;
+      strong++;
+      const ch = c.chords[Math.floor(i / MUSIC.STEPS_PER_BAR)];
+      if (ch.tones.some((t) => (t - ev.m) % 12 === 0)) fit++;
+    });
+    const pct = Math.round(100 * fit / strong);
+    if (lo < 55 || hi > 96) bad(`music ${name}: melody out of range ${lo}..${hi}`);
+    if (pct < 60) bad(`music ${name}: only ${pct}% of strong beats fit the chord`);
+    console.log(`  ${name.padEnd(7)} "${c.style.name}"  ${c.total / MUSIC.STEPS_PER_BAR} bars, ${notes} melody notes, ${(c.total * c.stepDur).toFixed(0)}s loop, ${pct}% of strong beats on chord tones`);
+  } catch (err) { bad(`music ${name}: ${err.message}`); }
+});
 console.log('\nBattle balance (300 simulated fights each, party at the minimum level for that chapter, 2 herbs):');
 LEVELS.forEach((D, li) => {
   let party = D.party.slice();

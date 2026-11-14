@@ -11,13 +11,26 @@ Open `index.html` in Chrome. No build step and no server needed.
 - Arrows or WASD: move
 - Z or Enter: talk and confirm
 - X or Esc: pause menu (shows your current goal, chapter select)
-- M: music on and off
+- M: switch music
 
 Progress saves automatically in the browser. Add `?unlock=1` to the address to open every chapter.
 
 ## Music
 
-The game plays its own chiptune music by default. If a file named `audio/music.mp3` exists, the game plays that instead, starting on your first key press. That file is ignored by git on purpose, so a copyrighted soundtrack does not get published with the game.
+The game has its own original chiptune soundtrack, written for it and played live by a small synth in `js/music.js` (lead, harmony, bass, pads, echo and drums). There are eight themes, and the game switches between them by scene:
+
+| Theme | Where it plays |
+|---|---|
+| The Journey North | Title screen and ending |
+| Hearth and Market | Towns and cities |
+| A Road With Friends | Travel on the road |
+| Six Months of Winter | Snowy mountains |
+| What the Mist Remembers | Caves, ruins and eerie places |
+| Fifty Years Ago | Flashbacks and quiet scenes |
+| Ordinary Offensive Magic | Wild battles |
+| The Scales Tip | Boss battles |
+
+If a file named `audio/music.mp3` exists next to the game, it plays that instead, and M switches between that file, the chiptune soundtrack and silence. That file is ignored by git on purpose, so a copyrighted soundtrack does not get published with the game. Add `?chip=1` to the address to always use the chiptune soundtrack.
 
 ## Check
 

@@ -41,7 +41,7 @@ LEVELS.push({
         '*Frieren returns, as promised. Himmel is an old man now. So are Heiter and Eisen.',
         'Himmel: I waited for you. One last adventure with everyone. I am glad.',
         '*They watch the meteors a second time. It is every bit as beautiful.',
-        { fx: null }, { card: 'Himmel the Hero\npassed away soon after' },
+        { fx: 'night' }, { card: 'Himmel the Hero\npassed away soon after' },
         '*At the funeral, people whisper that the elf does not even look sad.',
         'Frieren: I only traveled with him for ten years. I knew human lives were short...',
         'Frieren: So why did I not try to know him better?',

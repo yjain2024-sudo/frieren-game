@@ -97,7 +97,7 @@ LEVELS.push({
 });
 
 LEVELS.push({
-  title: 'Aura the Guillotine', ep: 'Episodes 9 and 10', place: 'Outside the walls', party: ['frieren'], base: '.', music: 'boss', face: 'u', bbg: '#c8ccd8',
+  title: 'Aura the Guillotine', ep: 'Episodes 9 and 10', place: 'Outside the walls', party: ['frieren'], base: '.', music: 'cave', face: 'u', bbg: '#c8ccd8',
   map: [
     '#########e##########',
     '######...3...#######',
